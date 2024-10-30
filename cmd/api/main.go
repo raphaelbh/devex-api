@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
@@ -45,8 +47,11 @@ func webhookHandler(c *gin.Context) {
 		return
 	}
 
-	println("Webhook called")
-	println(payload)
+	logger := slog.Default()
+	logger.Info("Webhook called")
+
+	dataJSON, _ := json.Marshal(payload)
+	logger.Info("Git push event", slog.String("data", string(dataJSON)))
 
 	c.Writer.WriteHeader(http.StatusNoContent)
 }
