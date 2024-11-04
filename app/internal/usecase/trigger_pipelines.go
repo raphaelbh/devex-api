@@ -1,8 +1,12 @@
-package application
+package usecase
 
 import (
 	"fmt"
 	"log/slog"
+)
+
+var (
+	logger = slog.Default()
 )
 
 type TriggerPipelinesCommand struct {
@@ -18,7 +22,6 @@ type TriggerPipelinesCommand struct {
 }
 
 func TriggerPipelines(command TriggerPipelinesCommand) error {
-	logger := slog.Default()
 	logger.Info("TriggerPipelines")
 	logger.Info(fmt.Sprintf("%+v", command))
 	return nil

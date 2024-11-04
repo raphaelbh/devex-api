@@ -1,7 +1,7 @@
 package main
 
-import "github.com/raphaelbh/devex-api/internal/api/router"
+import "github.com/raphaelbh/devex-api/internal/api"
 
 func main() {
-	router.Run()
+	api.Run()
 }
