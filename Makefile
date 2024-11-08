@@ -1,3 +1,10 @@
+compose-down:
+	docker-compose -f ./app/compose.yaml down --remove-orphans
+
+compose-up:
+	docker-compose -f ./app/compose.yaml down --remove-orphans || true
+	docker-compose -f ./app/compose.yaml up -d --build
+
 dependencies.install:
 	go get -u github.com/gin-gonic/gin
 	go get github.com/gin-contrib/cors
