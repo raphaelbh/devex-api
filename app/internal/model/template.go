@@ -9,5 +9,5 @@ type Template struct {
 	RepositoryApp string          `gorm:"not null;size:100"`
 	Building      json.RawMessage `gorm:"type:json"`
 
-	Services []Service
+	Services []Service `gorm:"foreignKey:TemplateID"`
 }

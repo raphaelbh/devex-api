@@ -12,8 +12,8 @@ type Service struct {
 	RepositoryApp string          `gorm:"not null;size:100"`
 	EnvVariables  json.RawMessage `gorm:"not null;type:json"`
 
-	TemplateID    string
-	ServiceEvents []ServiceEvent
+	TemplateID    string         `gorm:"not null"`
+	ServiceEvents []ServiceEvent `gorm:"foreignKey:ServiceID"`
 }
 
 type ServiceEvent struct {
@@ -23,5 +23,5 @@ type ServiceEvent struct {
 	Type string          `gorm:"not null;size:10"` // [ BUILD | DEPLOY ]
 	Data json.RawMessage `gorm:"not null;type:json"`
 
-	ServiceID string
+	ServiceID string `gorm:"not null"`
 }

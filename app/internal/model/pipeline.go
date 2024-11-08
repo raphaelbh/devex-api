@@ -10,6 +10,9 @@ type Pipeline struct {
 
 	Name       string          `gorm:"not null;size:50"`
 	Definition json.RawMessage `gorm:"not null;type:json"`
+
+	Executions []PipelineExecution `gorm:"foreignKey:PipelineID"`
+	Variables  []PipelineVariable  `gorm:"foreignKey:PipelineID"`
 }
 
 type PipelineExecution struct {
@@ -23,7 +26,7 @@ type PipelineExecution struct {
 	Logs        string          `gorm:"not null;type:text"`
 	ElapsedTime int             `gorm:"not null"`
 
-	PipelineID string
+	PipelineID string `gorm:"not null"`
 }
 
 type PipelineVariable struct {
@@ -33,5 +36,5 @@ type PipelineVariable struct {
 	Key   string `gorm:"not null;size:50"`
 	Value string `gorm:"not null;size:200"`
 
-	PipelineID string
+	PipelineID string `gorm:"not null"`
 }
