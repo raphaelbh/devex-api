@@ -9,30 +9,29 @@
       execute: { 
          type: PIPELINE, 
          data: { 
-            pipeline_id: 1, 
+            pipeline_id: '1', 
             input: {
-               service_name: vira da consulta,
-               service_repository: vira da consulta
-               tag: calculado a partir da consulta
+         service_name: 'devex-api',
+                  service_repository: 'https://github.com/raphaelbh/devex-api'
             }  
          }
       }
    }
 
-## applications
+## services
 - name
 - repository_app
 - template_id
 - env_variables (para cada ambiente cadastrado)
    { environment_id: {}, environment_id: {} }
 
-## application_variables
+## service_variables
 - application_id
 - type: VARIABLE | SECRET
 - key
 - value
 
-## application_events
+## service_events
 - application_id
 - type: BUILD | DEPLOY
 - trigged_at
@@ -60,8 +59,14 @@
 
 ## pipelines 
 - name
-- version: 1
-- definition: { ... }
+- version
+- definition
+   {
+      "image": "alpine",
+      "commands": [
+         "echo go service building..."
+      ]
+   }
 
 ## pipeline_executions
 - pipeline_id
