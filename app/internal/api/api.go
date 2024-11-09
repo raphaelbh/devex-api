@@ -17,24 +17,23 @@ func Run() {
 	router.SetTrustedProxies(nil)
 	router.Use(cors.New(corsConfig()))
 
+	// public rotes
 	public := router.Group("/v1")
 	public.GET("/health", healthHandler)
 
-	// environments
-	environments := public.Group("/environments")
+	// private routes
+	private := router.Group("/v1")
+	private.Use(authenticationMiddleware())
+	environments := private.Group("/environments")
 	{
 		environments.GET("", getAllEnvironmentsHandler)
 		environments.GET(":id", getEnvironmentHandler)
 	}
-
-	// events
-	events := public.Group("/events")
+	events := private.Group("/events")
 	{
 		events.POST("", gitEventsHandler)
 	}
-
-	// pipelines
-	pipelines := public.Group("/pipelines")
+	pipelines := private.Group("/pipelines")
 	{
 		pipelines.POST(":id/execute", executePipelineHandler)
 	}

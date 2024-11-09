@@ -13,6 +13,9 @@ type config struct {
 	Database struct {
 		Url string `envconfig:"DATABASE_URL" default:"host=localhost user=brekke password=brekke dbname=brekke port=5432"`
 	}
+	Authentication struct {
+		Key string `envconfig:"AUTHENTICATION_KEY" default:"auth-key"`
+	}
 }
 
 var (
