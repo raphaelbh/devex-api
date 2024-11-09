@@ -2,11 +2,6 @@ package usecase
 
 import (
 	"fmt"
-	"log/slog"
-)
-
-var (
-	logger = slog.Default()
 )
 
 type TriggerPipelinesCommand struct {
