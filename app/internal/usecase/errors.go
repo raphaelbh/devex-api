@@ -11,7 +11,9 @@ func (e *NotFountError) Error() string {
 	return fmt.Sprintf("%s[%s] not found", e.Model, e.ID)
 }
 
-type UnexpectedError struct{}
+type UnexpectedError struct {
+	Err error
+}
 
 func (e *UnexpectedError) Error() string {
 	return "Unexpected error"

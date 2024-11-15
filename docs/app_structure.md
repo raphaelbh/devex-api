@@ -1,5 +1,22 @@
 # app structure
 
+## environments
+- name
+- deployment
+{
+   on: { event: PIPELINE_EXECUTION_COMPLETED, data: { pipeline_id: 1 } },
+   execute: { 
+      type: PIPELINE, 
+      data: { 
+         pipeline_id: 2, 
+         input: { 
+            service_name: vira do evento
+            tag: vira do evento
+         }
+      }
+   }
+}
+
 ## templates
 - name
 - repository_app
@@ -18,18 +35,16 @@
       }
    }
 
+## secrets
+- key
+- value
+
 ## services
 - name
 - repository_app
 - template_id
 - env_variables (para cada ambiente cadastrado)
    { environment_id: {}, environment_id: {} }
-
-## service_variables
-- application_id
-- type: VARIABLE | SECRET
-- key
-- value
 
 ## service_events
 - application_id
@@ -38,31 +53,12 @@
 - trigged_by
 - data: {}
 
-## environments
-- name
-- deployment
-{
-   on: { event: PIPELINE_EXECUTION_COMPLETED, data: { pipeline_id: 1 } },
-   execute: { 
-      type: PIPELINE, 
-      data: { 
-         pipeline_id: 2, 
-         input: { 
-            service_name: vira do evento
-            tag: vira do evento
-         }
-      }
-   }
-}
-
 ----------
 
 ## pipelines 
 - name
-- version
 - definition
    {
-      "image": "alpine",
       "commands": [
          "echo go service building..."
       ]
@@ -79,9 +75,3 @@
 - trigged_at
 - trigged_by
 - trigger_type [ MANUAL | PIPELINE | GIT | API ]
-
-## pipeline_variables
-- pipeline_id
-- type: VARIABLE | SECRET
-- key
-- value

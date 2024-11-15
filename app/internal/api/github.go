@@ -7,14 +7,14 @@ import (
 	"github.com/raphaelbh/devex-api/internal/usecase"
 )
 
-func gitEventsHandler(c *gin.Context) {
+func githubEventsHandler(c *gin.Context) {
 	var request GitEventRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
 	}
 
-	if err := usecase.TriggerPipelines(request.toCommand()); err != nil {
+	if err := usecase.GitEvent(request.toCommand()); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
@@ -34,8 +34,8 @@ type GitEventRequest struct {
 	} `json:"repository"`
 }
 
-func (r GitEventRequest) toCommand() usecase.TriggerPipelinesCommand {
-	return usecase.TriggerPipelinesCommand{
+func (r GitEventRequest) toCommand() usecase.GitEventCommand {
+	return usecase.GitEventCommand{
 		Branch: r.Ref,
 		Pusher: struct {
 			Name  string

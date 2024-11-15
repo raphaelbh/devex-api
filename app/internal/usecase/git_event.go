@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-type TriggerPipelinesCommand struct {
+type GitEventCommand struct {
 	Branch string
 	Pusher struct {
 		Name  string
@@ -16,8 +16,7 @@ type TriggerPipelinesCommand struct {
 	}
 }
 
-func TriggerPipelines(command TriggerPipelinesCommand) error {
-	logger.Info("TriggerPipelines")
+func GitEvent(command GitEventCommand) error {
 	logger.Info(fmt.Sprintf("%+v", command))
 	return nil
 }

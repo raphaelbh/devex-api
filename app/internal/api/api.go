@@ -20,6 +20,7 @@ func Run() {
 	// public rotes
 	public := router.Group("/v1")
 	public.GET("/health", healthHandler)
+	public.GET("/github-events", githubEventsHandler)
 
 	// private routes
 	private := router.Group("/v1")
@@ -29,13 +30,9 @@ func Run() {
 		environments.GET("", getAllEnvironmentsHandler)
 		environments.GET(":id", getEnvironmentHandler)
 	}
-	events := private.Group("/events")
-	{
-		events.POST("", gitEventsHandler)
-	}
 	pipelines := private.Group("/pipelines")
 	{
-		pipelines.POST(":id/execute", executePipelineHandler)
+		pipelines.POST(":id/trigger", triggerPipelineHandler)
 	}
 
 	router.Run(":" + conf.Server.Port)
