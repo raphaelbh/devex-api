@@ -16,6 +16,9 @@ type config struct {
 	Authentication struct {
 		Key string `envconfig:"AUTHENTICATION_KEY" default:"auth-key"`
 	}
+	Encryption struct {
+		Key string `envconfig:"SECURITY_ENCRYPTION_KEY" default:"f1a3c47d9e20b8653fa472d9bf38ab12"`
+	}
 }
 
 var (

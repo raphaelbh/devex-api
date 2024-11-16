@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/raphaelbh/devex-api/internal/config"
+	"github.com/raphaelbh/devex-api/internal/commons/config"
 )
 
 var (
@@ -29,6 +29,10 @@ func Run() {
 	{
 		environments.GET("", getAllEnvironmentsHandler)
 		environments.GET(":id", getEnvironmentHandler)
+	}
+	secrets := private.Group("/secrets")
+	{
+		secrets.POST("", createSecretHandler)
 	}
 	pipelines := private.Group("/pipelines")
 	{

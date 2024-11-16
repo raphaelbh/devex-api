@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/raphaelbh/devex-api/internal/config"
+	"github.com/raphaelbh/devex-api/internal/commons/config"
 	"github.com/raphaelbh/devex-api/internal/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -26,10 +26,11 @@ func init() {
 	logger.Info("Database connected")
 
 	if err := conn.AutoMigrate(
+		&model.Environment{},
+		&model.Secret{},
 		&model.Template{},
 		&model.Service{},
 		&model.ServiceEvent{},
-		&model.Environment{},
 		&model.Pipeline{},
 		&model.PipelineExecution{},
 		&model.PipelineVariable{},

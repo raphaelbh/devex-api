@@ -1,6 +1,8 @@
 package usecase
 
-import "log/slog"
+import (
+	"log/slog"
+)
 
 var (
 	logger = slog.Default()
