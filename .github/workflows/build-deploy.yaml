@@ -31,7 +31,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          context: ./app
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/devex-api:latest
 
       - name: Render deploy
