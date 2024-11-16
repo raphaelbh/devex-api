@@ -5,3 +5,4 @@ dependencies.install:
 	go get -u gorm.io/driver/postgres
 	go get -u gorm.io/gorm
 	go get -u github.com/docker/docker/client
+	go get -u github.com/segmentio/ksuid
