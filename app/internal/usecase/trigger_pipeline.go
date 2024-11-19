@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"log/slog"
 	"os"
 	"os/exec"
 	"regexp"
@@ -18,14 +19,18 @@ type TriggerPipelineCommand struct {
 func TriggerPipeline(command TriggerPipelineCommand) (string, error) {
 	var executionID = ksuid.New().String()
 	var pipeline, _ = pipelineRepository.FindById(command.PipelineID)
+	logger.Info("Pipeline recovered")
 
-	createContainer(executionID, pipeline.Definition.Image)
+	if err := createContainer(executionID, pipeline.Definition.Image); err != nil {
+		logger.Error("Unable to create container", slog.String("error", err.Error()))
+	}
 	defer removeContainer(executionID)
 
 	var secretsCache = map[string]string{}
 	for _, step := range pipeline.Definition.Steps {
 
 		var commandExec = step.Command
+		logger.Info("Executing command", slog.String("command", commandExec))
 
 		re := regexp.MustCompile(`\${{\s*.*?\s*}}`)
 		var matches = re.FindAllString(step.Command, -1)
@@ -50,9 +55,12 @@ func TriggerPipeline(command TriggerPipelineCommand) (string, error) {
 			}
 
 			commandExec = strings.ReplaceAll(commandExec, variable, toReplace)
+			logger.Info("Command updated")
 		}
 
-		executeCommand(executionID, commandExec)
+		if err := executeCommand(executionID, commandExec); err != nil {
+			logger.Error("Unable to execute command in container", slog.String("error", err.Error()))
+		}
 	}
 
 	return executionID, nil
@@ -80,10 +88,14 @@ func executeCommand(containerName, command string) error {
 
 func removeContainer(containerName string) {
 	exec.Command("docker", "rm", "-f", containerName).Run()
+	logger.Info("Container removed")
 }
 
 func getSecretValue(key string) string {
 	var secret, _ = secretRepository.FindByKey(key)
-	var secretValue, _ = encryption.Decrypt(secret.Value)
+	var secretValue, err = encryption.Decrypt(secret.Value)
+	if err != nil {
+		logger.Error("Unable to decrypt secret", slog.String("error", err.Error()))
+	}
 	return secretValue
 }
