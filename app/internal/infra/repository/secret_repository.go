@@ -4,14 +4,6 @@ import (
 	"github.com/raphaelbh/devex-api/internal/model"
 )
 
-var (
-	secretRepository = SecretRepository{}
-)
-
-func GetSecretRepository() SecretRepository {
-	return secretRepository
-}
-
 type SecretRepository struct{}
 
 func (r SecretRepository) Create(secret *model.Secret) error {

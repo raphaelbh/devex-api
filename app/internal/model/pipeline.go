@@ -2,14 +2,33 @@ package model
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 )
+
+type Step struct {
+	Name    string `json:"name"`
+	Command string `json:"command"`
+}
+
+type Definition struct {
+	Image string `json:"image"`
+	Steps []Step `json:"steps"`
+}
+
+func (m *Definition) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to unmarshal JSONB value: %v", value)
+	}
+	return json.Unmarshal(bytes, m)
+}
 
 type Pipeline struct {
 	Model
 
-	Name       string          `gorm:"not null;size:50"`
-	Definition json.RawMessage `gorm:"not null;type:json"`
+	Name       string     `gorm:"not null;size:50"`
+	Definition Definition `gorm:"not null;type:jsonb"`
 
 	Executions []PipelineExecution `gorm:"foreignKey:PipelineID"`
 	Variables  []PipelineVariable  `gorm:"foreignKey:PipelineID"`
@@ -22,7 +41,7 @@ type PipelineExecution struct {
 
 	TriggerType string          `gorm:"not null;size:20"` // [ MANUAL | PIPELINE | GIT | API ]
 	Status      string          `gorm:"not null;size:20"` // [ WAITING_EXECUTION | IN_PROGRESS | CANCELED | FAIL | COMPLETED ]
-	Input       json.RawMessage `gorm:"not null;type:json"`
+	Input       json.RawMessage `gorm:"not null;type:jsonb"`
 	Logs        string          `gorm:"not null;type:text"`
 	ElapsedTime int             `gorm:"not null"`
 

@@ -14,16 +14,20 @@ func triggerPipelineHandler(c *gin.Context) {
 		return
 	}
 
-	usecase.TriggerPipeline(request.toCommand())
-	c.Writer.WriteHeader(http.StatusNoContent)
+	var command = usecase.TriggerPipelineCommand{
+		PipelineID: c.Param("id"),
+		Input:      request.Input,
+	}
+	var executionID, _ = usecase.TriggerPipeline(command)
+	c.IndentedJSON(http.StatusOK, buildResponse(TriggerPipelineResponse{
+		ExecutionID: executionID,
+	}))
 }
 
 type TriggerPipelineRequest struct {
-	Commands []string `json:"commands"`
+	Input map[string]string `json:"input"`
 }
 
-func (r TriggerPipelineRequest) toCommand() usecase.TriggerPipelineCommand {
-	return usecase.TriggerPipelineCommand{
-		Commands: r.Commands,
-	}
+type TriggerPipelineResponse struct {
+	ExecutionID string `json:"execution_id"`
 }

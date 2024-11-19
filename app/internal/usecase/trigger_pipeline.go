@@ -1,55 +1,89 @@
 package usecase
 
 import (
-	"context"
-	"io"
 	"os"
+	"os/exec"
+	"regexp"
 	"strings"
 
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/image"
-	"github.com/docker/docker/client"
-	"github.com/docker/docker/pkg/stdcopy"
+	"github.com/raphaelbh/devex-api/internal/commons/encryption"
+	"github.com/segmentio/ksuid"
 )
 
 type TriggerPipelineCommand struct {
-	Commands []string
+	PipelineID string
+	Input      map[string]string
 }
 
-func TriggerPipeline(command TriggerPipelineCommand) {
-	dockerImage := "docker.io/library/alpine"
+func TriggerPipeline(command TriggerPipelineCommand) (string, error) {
+	var executionID = ksuid.New().String()
+	var pipeline, _ = pipelineRepository.FindById(command.PipelineID)
 
-	go func() {
-		ctx := context.Background()
-		cli, _ := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-		defer cli.Close()
+	createContainer(executionID, pipeline.Definition.Image)
+	defer removeContainer(executionID)
 
-		reader, _ := cli.ImagePull(ctx, dockerImage, image.PullOptions{})
-		defer reader.Close()
-		io.Copy(os.Stdout, reader)
+	var secretsCache = map[string]string{}
+	for _, step := range pipeline.Definition.Steps {
 
-		resp, _ := cli.ContainerCreate(ctx, &container.Config{
-			Image: dockerImage,
-			Cmd:   []string{"tail", "-f", "/dev/null"},
-			Tty:   false,
-		}, &container.HostConfig{
-			Privileged: true,
-			Binds:      []string{"/var/run/docker.sock:/var/run/docker.sock"},
-		}, nil, nil, "")
+		var commandExec = step.Command
 
-		cli.ContainerStart(ctx, resp.ID, container.StartOptions{})
-		execResp, _ := cli.ContainerExecCreate(ctx, resp.ID, container.ExecOptions{
-			Cmd:          []string{"sh", "-c", strings.Join(command.Commands, " && ")},
-			AttachStdout: true,
-			AttachStderr: true,
-		})
+		re := regexp.MustCompile(`\${{\s*.*?\s*}}`)
+		var matches = re.FindAllString(step.Command, -1)
+		for _, variable := range matches {
 
-		hijackedResp, _ := cli.ContainerExecAttach(ctx, execResp.ID, container.ExecAttachOptions{})
-		defer hijackedResp.Close()
+			reg := regexp.MustCompile(`\${{\s*(.+?)\s*}}`)
+			matchess := reg.FindStringSubmatch(variable)
 
-		stdcopy.StdCopy(os.Stdout, os.Stderr, hijackedResp.Reader)
+			var varType = strings.Split(matchess[1], ".")[0]
+			var varKey = strings.Split(matchess[1], ".")[1]
 
-		cli.ContainerStop(ctx, resp.ID, container.StopOptions{})
-		cli.ContainerRemove(ctx, resp.ID, container.RemoveOptions{Force: true})
-	}()
+			var toReplace = ""
+			if varType == "input" {
+				toReplace = command.Input[varKey]
+			}
+
+			if varType == "secrets" {
+				if _, exists := secretsCache[varKey]; !exists {
+					secretsCache[varKey] = getSecretValue(varKey)
+				}
+				toReplace = secretsCache[varKey]
+			}
+
+			commandExec = strings.ReplaceAll(commandExec, variable, toReplace)
+		}
+
+		executeCommand(executionID, commandExec)
+	}
+
+	return executionID, nil
+}
+
+func createContainer(containerName, image string) error {
+	cmd := exec.Command("docker", "run", "-d",
+		"--name", containerName,
+		"-v", "/var/run/docker.sock:/var/run/docker.sock",
+		"-w", "/workspace",
+		image, "sleep", "infinity")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
+}
+
+func executeCommand(containerName, command string) error {
+	cmd := exec.Command("docker", "exec", containerName, "sh", "-c", command)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
+}
+
+func removeContainer(containerName string) {
+	exec.Command("docker", "rm", "-f", containerName).Run()
+}
+
+func getSecretValue(key string) string {
+	var secret, _ = secretRepository.FindByKey(key)
+	var secretValue, _ = encryption.Decrypt(secret.Value)
+	return secretValue
 }
